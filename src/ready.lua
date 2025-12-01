@@ -70,10 +70,10 @@ extrafields, boonIconPath, requirements, flavourtext
 ]]
 gods.CreateBoon({
     pluginGUID = _PLUGIN.guid,
-    internalBoonName = "RandomCurseBoon",
+    characterName = "Hera",    
+	internalBoonName = "RandomCurseBoon",
     isLegendary = false,
     Elements = {"Fire"},
-    characterName = "Hera",
     addToExistingGod = true,
 
     displayName = "Family Discourse",
@@ -257,8 +257,7 @@ gods.CreateBoon({
     pluginGUID = _PLUGIN.guid,
     internalBoonName = "PoseidonWrathBoon",
     isLegendary = false,
-	InheritFrom = {"WrathTrait"},
-    Elements = {"Water"},
+	InheritFrom = Water
     characterName = "Poseidon",
     addToExistingGod = true,
 	reuseBaseIcons = true,
@@ -294,13 +293,19 @@ gods.CreateBoon({
 		{
 			ValidProjectiles = { "PoseidonOmegaWave" },
 			ValidWaveDamageAddition = {
-				BaseValue = 2.00,
-				SourceIsMultiplier = true,
+				BaseValue = 2.00, -- boon description only
+				SourceIsMultiplier = true, 
 			},
             ReportValues = { ReportedWaveMultiplier = "ValidWaveDamageAddition" },
         },
+		OnEnemyDamagedAction =
+		{
+			FunctionName = "rom.mods." .. _PLUGIN.guid .. ".not.CheckPoseidonSplashAndWave",
+		}
     },
 })
+
+-- local PoseidonWrathBoonPluginGUID = _PLUGIN.guid .. '-' .. 'PoseidonWrathBoon'
 
 -- Function Library --
 
@@ -365,17 +370,112 @@ function not_public.CheckRandomShareDamageCurse(victim, functionArgs, triggerArg
 	end
 end
 
-modutil.mod.Path.Context.Wrap.Static("CheckPoseidonSplash", function()
+-- PoseidonWrath custom function
+function not_public.CheckPoseidonSplashAndWave(victim, functionArgs, triggerArgs )
+	local cooldownName = "PoseidonSplash"
+	if functionArgs.CooldownName then
+		cooldownName = functionArgs.CooldownName
+	end
+	if ProjectileHasUnitHit( triggerArgs.ProjectileId, "PoseidonSplash") 
+		and (triggerArgs.SourceWeapon == nil or not functionArgs.MultihitWeaponWhitelistLookup or not functionArgs.MultihitWeaponWhitelistLookup[triggerArgs.SourceWeapon])
+		and (triggerArgs.SourceProjectile == nil or not functionArgs.MultihitProjectileWhitelistLookup or not functionArgs.MultihitProjectileWhitelistLookup[triggerArgs.SourceProjectile])  then
+		return
+	end
+	local passesMultihitCheck = true
+	if triggerArgs.SourceProjectile ~= nil and functionArgs.MultihitProjectileWhitelistLookup and functionArgs.MultihitProjectileWhitelistLookup[triggerArgs.SourceProjectile] and functionArgs.MultihitProjectileConditions[triggerArgs.SourceProjectile] then
+		local conditions = ShallowCopyTable(functionArgs.MultihitProjectileConditions[triggerArgs.SourceProjectile])
+		
+		if conditions.TraitNameRequirements then
+			for _, traitConditions in pairs( conditions.TraitNameRequirements ) do
+				if traitConditions.TraitName and HeroHasTrait(traitConditions.TraitName) then
+					conditions = ShallowCopyTable(traitConditions)
+					break
+				end
+			end
+		end
+		if not conditions.Cooldown and not conditions.Window and ProjectileHasUnitHit( triggerArgs.ProjectileId, "PoseidonSplash") then
+			return
+		end
+		if conditions.Cooldown and not CheckCooldown( "PoseidonSplash", conditions.Cooldown ) then
+			return
+		end
+		if conditions.Window and CheckCountInWindow("PoseidonSplash", conditions.Window, conditions.Count ) then
+			return
+		end
+	elseif triggerArgs.SourceWeapon ~= nil and functionArgs.MultihitWeaponWhitelistLookup[triggerArgs.SourceWeapon] and functionArgs.MultihitWeaponConditions[triggerArgs.SourceWeapon] then
+		local conditions = functionArgs.MultihitWeaponConditions[triggerArgs.SourceWeapon]
+		if conditions.Cooldown and not CheckCooldown( "PoseidonSplash", conditions.Cooldown ) then
+			return
+		end
+		if conditions.Window and CheckCountInWindow("PoseidonSplash", conditions.Window, conditions.Count ) then
+			return
+		end
+	else
+		if functionArgs.Cooldown and not CheckCooldown( "PoseidonSplash", functionArgs.Cooldown ) then
+			return
+		end
+		if functionArgs.Window and CheckCountInWindow("PoseidonSplash", functionArgs.Window, functionArgs.Count ) then
+			return
+		end		
+	end
+	local graphic = nil
+	local count = 1
+	local traitData = GetHeroTrait("OmegaPoseidonProjectileBoon")
+	--[[print(traitData)
+	for k,v in pairs(traitData) do
+		print(k)
+	end
+	print(traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier)]]--
+
+	for i=1, count do
+		CreateProjectileFromUnit({ 
+			Name = "PoseidonOmegaWave", 
+			Id = CurrentRun.Hero.ObjectId, 
+			Angle = triggerArgs.ImpactAngle, 
+			DestinationId = victim.ObjectId, 
+			FireFromTarget = true,
+			DamageMultiplier = (traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier or 1) * 2,
+			DataProperties = 
+			{
+				StartFx = graphic,
+				ImpactVelocity = force,
+				StartDelay = (i - 1 ) * 0.1
+			},
+			ProjectileCap = 1,
+		})
+		local doubleChance = GetTotalHeroTraitValue("DoubleOlympianProjectileChance") * GetTotalHeroTraitValue( "LuckMultiplier", { IsMultiplier = true })
+		if RandomChance(doubleChance) then
+			wait( GetTotalHeroTraitValue("DoubleOlympianProjectileInterval" ))
+			CreateProjectileFromUnit({ 
+				Name = "PoseidonOmegaWave", 
+				Id = CurrentRun.Hero.ObjectId, 
+				Angle = triggerArgs.ImpactAngle, 
+				DestinationId = victim.ObjectId, 
+				FireFromTarget = true,
+				DamageMultiplier = (traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier or 1) * 2,
+				DataProperties = 
+				{
+					StartFx = graphic,
+					ImpactVelocity = force,
+					StartDelay = (i - 1 ) * 0.1
+				},
+				ProjectileCap = 2,
+			})
+		end
+	end
+end
+
+--[[modutil.mod.Path.Context.Wrap.Static("CheckPoseidonSplash", function()
   modutil.mod.Path.Wrap("CreateProjectileFromUnit",
     function(base, args, ...)
-      if not HeroHasTrait(PoseidonWrathBoon.pluginGUID) then
+      if not HeroHasTrait(PoseidonWrathBoonPluginGUID) then
         return base(args, ...)
       end
       base(args, ...) -- spawn splash
       args.Name = "PoseidonOmegaWave"
       return base(args, ...) -- spawn swell
     end)
-end)
+end)]]--
 
 --[[
 	AirBoon = 
