@@ -73,7 +73,10 @@ gods.CreateBoon({
     characterName = "Hera",    
 	internalBoonName = "RandomCurseBoon",
     isLegendary = false,
-    Elements = {"Fire"},
+	InheritFrom = 
+	{
+		Elements = "FireBoon",
+	},
     addToExistingGod = true,
 
     displayName = "Family Discourse",
@@ -255,10 +258,13 @@ gods.IsBoonRegistered("RandomCurseBoon", true)
 
 gods.CreateBoon({
     pluginGUID = _PLUGIN.guid,
-    internalBoonName = "PoseidonWrathBoon",
-    isLegendary = false,
-	InheritFrom = Water
     characterName = "Poseidon",
+	internalBoonName = "PoseidonWrathBoon",
+    isLegendary = false,
+	InheritFrom = 
+	{
+		Elements = "WaterBoon",
+	},
     addToExistingGod = true,
 	reuseBaseIcons = true,
     BlockStacking = true,
@@ -301,6 +307,95 @@ gods.CreateBoon({
 		OnEnemyDamagedAction =
 		{
 			FunctionName = "rom.mods." .. _PLUGIN.guid .. ".not.CheckPoseidonSplashAndWave",
+			--[[Args = 
+			{
+				CooldownName = "PoseidonPrimary",
+				ProjectileName = "PoseidonSplashSplinter",
+				ExcludeLinked = true,
+				MultihitWeaponWhitelist = 
+				{
+				},
+				MultihitWeaponConditions = 
+				{
+				},
+				MultihitProjectileWhitelist = 
+				{
+					-- Staff
+					"ProjectileSwing5",
+					"ProjectileStaffSingle",
+					"ProjectileStaffWall",
+
+					-- Axe
+					"ProjectileAxe3",
+					"ProjectileAxe2",
+					"ProjectileAxeOverhead",
+					"ProjectileAxeNergalSlow",
+					"ProjectileAxeNergalFast",
+					"ProjectileAxeNergalFastDash",
+					"ProjectileAxeSpin",
+
+					-- Dagger
+					"ProjectileDaggerSliceDouble",
+					"ProjectileDaggerBackstab",
+					"ProjectileDaggerSpinMorrigan",
+					"ProjectileDaggerExecuteMorrigan",
+
+					-- Torch
+					"ProjectileTorchWave",
+					"ProjectileTorchBallEos",
+					"ProjectileTorchRepeatStrike",
+					"ProjectileTorchGhostLarge",
+					"ProjectileTorchGhostExplosion",
+					"ProjectileTorchGhostLargeExplosion",
+					"ProjectileTorchSupayBallEx",
+
+					-- Lob
+					"ProjectileLob",
+					"ProjectileLobCharged",
+					"ProjectileLobChargedPulse",
+					"ProjectileLobOverheat",
+
+					-- Suit
+					"ProjectileSuitCharged",
+					"ProjectileSuitDash",
+				},
+				MultihitProjectileConditions = 
+				{
+					ProjectileSwing5 = { Count = 5, Window = 0.3 },
+					ProjectileStaffSingle = { Count = 3, Window = 0.25 },
+					ProjectileStaffWall = { Count = 3, Window = 0.25 },
+
+					ProjectileAxe3 = { Count = 4, Window = 0.15 },
+					ProjectileAxe2 = { Count = 4, Window = 0.15 },
+					ProjectileAxeOverhead = { Count = 5, Window = 0.45 },
+					ProjectileAxeNergalSlow = { Count = 5, Window = 0.45 },
+					ProjectileAxeNergalFast = { Count = 4, Window = 0.15 },
+					ProjectileAxeNergalFastDash = { Count = 4, Window = 0.15 },
+					ProjectileAxeSpin = { Count = 3, Window = 0.15 },
+
+					ProjectileDaggerSliceDouble = { Count = 3, Window = 0.1 },
+					ProjectileDaggerBackstab = { Count = 3, Window = 0.1 },
+					ProjectileDaggerSpinMorrigan = { Count = 3, Window = 0.3 },
+					ProjectileDaggerExecuteMorrigan = { Count = 3, Window = 0.1 },
+
+					ProjectileTorchWave = { Count = 3, Window = 0.24 },
+					ProjectileTorchBallEos = { Cooldown = 0.12 },
+					ProjectileTorchRepeatStrike = { Count = 3, Window = 0.35 },
+					ProjectileTorchGhostLarge  = { Cooldown = 0.12 },
+					ProjectileTorchGhostExplosion  = { Count = 3, Window = 0.2 },
+					ProjectileTorchGhostLargeExplosion  = { Count = 3, Window = 0.2 },
+					ProjectileTorchSupayBallEx  = { Count = 3, Window = 0.26 },
+
+					ProjectileLob = { Count = 3, Window = 0.08 },
+					ProjectileLobCharged = { Count = 4, Window = 0.24 },
+					ProjectileLobChargedPulse = { Count = 4, Window = 0.24 },
+					ProjectileLobOverheat = { Count = 5, Window = 0.22 },
+
+					ProjectileSuitCharged = { Count = 4, Window = 0.15 },
+					ProjectileSuitDash = { Count = 4, Window = 0.21 },
+				},
+				Cooldown = 0.033,
+			},]]--
 		}
     },
 })
@@ -378,9 +473,26 @@ function not_public.CheckPoseidonSplashAndWave(victim, functionArgs, triggerArgs
 	end
 	if ProjectileHasUnitHit( triggerArgs.ProjectileId, "PoseidonSplash") 
 		and (triggerArgs.SourceWeapon == nil or not functionArgs.MultihitWeaponWhitelistLookup or not functionArgs.MultihitWeaponWhitelistLookup[triggerArgs.SourceWeapon])
-		and (triggerArgs.SourceProjectile == nil or not functionArgs.MultihitProjectileWhitelistLookup or not functionArgs.MultihitProjectileWhitelistLookup[triggerArgs.SourceProjectile])  then
+		and (triggerArgs.SourceProjectile == nil or not functionArgs.MultihitProjectileWhitelistLookup or not functionArgs.MultihitProjectileWhitelistLookup[triggerArgs.SourceProjectile]) then
 		return
 	end
+	--[[local traitData = GetHeroTrait("PoseidonWeaponBoon")
+	if HeroHasTrait("PoseidonWeaponBoon") then
+		if traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist then
+    		if not traitData.OnEnemyDamagedAction.Args.ExcludeLinked then
+        	traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist = AddLinkedWeapons(traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist)
+			end
+    	end
+	end
+	local traitData = GetHeroTrait("PoseidonSpecialBoon")
+	if HeroHasTrait("PoseidonSepcialBoon") then
+		if traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist then
+    		if not traitData.OnEnemyDamagedAction.Args.ExcludeLinked then
+        	traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist = AddLinkedWeapons(traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist)
+			end
+    	end
+	end
+    traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelistLookup = ToLookup(traitData.OnEnemyDamagedAction.Args.MultihitWeaponWhitelist)]]--
 	local passesMultihitCheck = true
 	if triggerArgs.SourceProjectile ~= nil and functionArgs.MultihitProjectileWhitelistLookup and functionArgs.MultihitProjectileWhitelistLookup[triggerArgs.SourceProjectile] and functionArgs.MultihitProjectileConditions[triggerArgs.SourceProjectile] then
 		local conditions = ShallowCopyTable(functionArgs.MultihitProjectileConditions[triggerArgs.SourceProjectile])
@@ -416,17 +528,23 @@ function not_public.CheckPoseidonSplashAndWave(victim, functionArgs, triggerArgs
 		end
 		if functionArgs.Window and CheckCountInWindow("PoseidonSplash", functionArgs.Window, functionArgs.Count ) then
 			return
-		end		
+		end
+	end
+	ProjectileRecordUnitHit( triggerArgs.ProjectileId, "PoseidonSplash" )
+	-- print(triggerArgs.ProjectileId)
+	--[[for k,v in pairs(functionArgs) do
+		print(k)
+	end]]--
+	-- print(traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier)
+	
+	local traitData = GetHeroTrait("OmegaPoseidonProjectileBoon")
+
+	-- If Hero doesnt have Ocean Swell, dont crash, just dont do it
+	if not HeroHasTrait("OmegaPoseidonProjectileBoon") then
+		return
 	end
 	local graphic = nil
 	local count = 1
-	local traitData = GetHeroTrait("OmegaPoseidonProjectileBoon")
-	--[[print(traitData)
-	for k,v in pairs(traitData) do
-		print(k)
-	end
-	print(traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier)]]--
-
 	for i=1, count do
 		CreateProjectileFromUnit({ 
 			Name = "PoseidonOmegaWave", 
