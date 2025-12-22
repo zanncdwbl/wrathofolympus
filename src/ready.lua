@@ -710,15 +710,6 @@ gods.CreateBoon({
 
 -- Function Library --
 
----Verify if the victim can die
----@param victim table see EnemyData ()
----@return boolean
-function VictimCannotDie(victim)
-	return  victim.IsDead
-		or victim.CannotDieFromDamage
-		or ( victim.Phases and victim.CurrentPhase < victim.Phases )
-end
-
 -- FamilyDiscourse custom function
 function not_public.CheckRandomShareDamageCurse(victim, functionArgs, triggerArgs)
 	if triggerArgs.EffectName == "DamageShareEffect" and not triggerArgs.Reapplied and victim.ActivationFinished then
