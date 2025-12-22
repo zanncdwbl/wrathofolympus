@@ -809,19 +809,6 @@ modutil.mod.Path.Override("PoseidonWrath", function(unit, functionArgs, triggerA
 		ProjectileCap = 2,
 	}
 
-	local function PrintTable(table)
-		for key, value in pairs(table) do
-			if type(value) == "table" then
-				value = "table"
-			elseif type(value) == "boolean" then 
-				value = value and "True" or "False"
-			end
-			modutil.mod.Print(key..":"..value)
-		end
-	end
-
-	PrintTable(triggerArgs)
-
 	local count = 1
 	for i=1, count do
 		CreateProjectileFromUnit(omegaPoseidonProjectile)
