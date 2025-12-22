@@ -525,7 +525,8 @@ gods.CreateBoon({
 	ExtraFields = {
 		BoltDamage = 100, -- used for description only
 		OnEnemyDamagedAction = {
-			Name = "ZeusWrath",
+			FunctionName = "ZeusWrath",
+			ValidProjectiles = { "ZeusEchoStrike" },
 			Args = {
 				ProjectileName = "ZeusRetaliateStrike",
 				DoubleBoltChance = 0.4,
@@ -694,6 +695,15 @@ gods.CreateBoon({
 
 -- Function Library --
 
+---Verify if the victim can die
+---@param victim table see EnemyData ()
+---@return boolean
+function VictimCannotDie(victim)
+	return  victim.IsDead
+		or victim.CannotDieFromDamage
+		or ( victim.Phases and victim.CurrentPhase < victim.Phases )
+end
+
 -- FamilyDiscourse custom function
 function not_public.CheckRandomShareDamageCurse(victim, functionArgs, triggerArgs)
 	if triggerArgs.EffectName == "DamageShareEffect" and not triggerArgs.Reapplied and victim.ActivationFinished then
@@ -758,6 +768,9 @@ end
 -- PoseidonWrath custom function
 modutil.mod.Path.Wrap("DamageEnemy", function(baseFunc, victim, triggerArgs)
 	baseFunc(victim, triggerArgs)
+	
+	if VictimCannotDie(victim) then return end
+
 	if not HeroHasTrait(gods.GetInternalBoonName("PoseidonWrathBoon")) then
 		return
 	end
@@ -886,23 +899,8 @@ function not_public.HephRetaliate( unit, args )
 	end
 end
 
---ZeusWrath custom function
-modutil.mod.Path.Wrap("DamageEnemy", function(baseFunc, victim, triggerArgs)
-	baseFunc(victim, triggerArgs)
-	if not HeroHasTrait(gods.GetInternalBoonName("ZeusWrathBoon")) then
-		return
-	end
-	
-	if (triggerArgs.SourceProjectile == "ZeusEchoStrike") then
-		for _, data in pairs(GetHeroTraitValues("OnEnemyDamagedAction")) do
-			if data.Name == "ZeusWrath" then
-			return ZeusWrath( victim, data.Args )
-			end
-		end
-	end
-end)
-
-function ZeusWrath( unit, args )
+--ZeusWrath custom function 
+modutil.mod.Path.Override("ZeusWrath", function(unit, args)
 	local strikeCount = args.MinStrikes
 	while RandomChance( args.DoubleBoltChance * GetTotalHeroTraitValue( "LuckMultiplier", { IsMultiplier = true }) ) and strikeCount < args.MaxStrikes do
 		strikeCount = strikeCount + 1
@@ -918,7 +916,7 @@ function ZeusWrath( unit, args )
 		FollowUpDelay = 0.2, 
 		Count = strikeCount
 		})
-end
+end)
 
 --DemeterWrath custom functions
 
