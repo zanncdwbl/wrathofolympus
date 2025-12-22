@@ -304,6 +304,21 @@ gods.CreateBoon({
 			},
 			ReportValues = { ReportedWaveMultiplier = "ValidWaveDamageAddition" },
 		},
+		OnEnemyDamagedAction = {
+			FunctionName = "PoseidonWrath",
+			ValidProjectiles = 
+			{
+				"PoseidonSplashSplinter",
+				"PoseidonCastSplashSplinter",
+				"PoseidonSplashBackSplinter",
+			},
+			Args = {
+				ProjectileName = "PoseidonOmegaWave",
+				FallbackWeaponDamageMultiplier = 1.0,
+				DamageMultiplier = 2.0,
+				ImpactVelocity = 600,
+			},
+		},
 	},
 })
 
@@ -765,65 +780,58 @@ function not_public.CheckRandomShareDamageCurse(victim, functionArgs, triggerArg
 	end
 end
 
--- PoseidonWrath custom function
-modutil.mod.Path.Wrap("DamageEnemy", function(baseFunc, victim, triggerArgs)
-	baseFunc(victim, triggerArgs)
-	
-	if VictimCannotDie(victim) then return end
-
-	if not HeroHasTrait(gods.GetInternalBoonName("PoseidonWrathBoon")) then
-		return
-	end
-	for k,v in pairs(triggerArgs) do
-		print(k)
-	end
-	local traitData = GetHeroTrait("OmegaPoseidonProjectileBoon")
-
+-- -- PoseidonWrath custom function
+modutil.mod.Path.Override("PoseidonWrath", function(unit, functionArgs, triggerArgs)
 	-- If Hero doesnt have Ocean Swell, dont crash, just dont do it
 	if not HeroHasTrait("OmegaPoseidonProjectileBoon") then
 		return
 	end
-	local graphic = nil
-	local count = 1
-	if (triggerArgs.SourceProjectile == "PoseidonSplashSplinter") then
-		for i=1, count do
-			CreateProjectileFromUnit({ 
-				Name = "PoseidonOmegaWave", 
-				Id = CurrentRun.Hero.ObjectId, 
-				Angle = triggerArgs.ImpactAngle, 
-				DestinationId = victim.ObjectId, 
-				FireFromTarget = true,
-				DamageMultiplier = (traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier or 1) * 2,
-				DataProperties = 
-				{
-					StartFx = graphic,
-					ImpactVelocity = force,
-					StartDelay = (i - 1 ) * 0.1
-				},
-				ProjectileCap = 1,
-			})
-			local doubleChance = GetTotalHeroTraitValue("DoubleOlympianProjectileChance") * GetTotalHeroTraitValue( "LuckMultiplier", { IsMultiplier = true })
-			if RandomChance(doubleChance) then
-				wait( GetTotalHeroTraitValue("DoubleOlympianProjectileInterval" ))
-				CreateProjectileFromUnit({ 
-					Name = "PoseidonOmegaWave", 
-					Id = CurrentRun.Hero.ObjectId, 
-					Angle = triggerArgs.ImpactAngle, 
-					DestinationId = victim.ObjectId, 
-					FireFromTarget = true,
-					DamageMultiplier = (traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier or 1) * 2,
-					DataProperties = 
-					{
-						StartFx = graphic,
-						ImpactVelocity = force,
-						StartDelay = (i - 1 ) * 0.1
-					},
-					ProjectileCap = 2,
-				})
+
+	local traitData = GetHeroTrait("OmegaPoseidonProjectileBoon")
+
+	-- This does nothing currently, but we can for example extract if red color must be used if trigger objectile is Ares one 
+	local dataProperties = GetProjectileProperty({ ProjectileId = triggerArgs.ProjectileId, Property = "DataProperties" })
+
+	local omegaPoseidonProjectile = 
+	{
+		Name = functionArgs.ProjectileName,
+		Id = CurrentRun.Hero.ObjectId,
+		Angle = triggerArgs.ImpactAngle,
+		DestinationId = unit.ObjectId,
+		FireFromTarget = true,
+		DamageMultiplier = (traitData.OnWeaponFiredFunctions.FunctionArgs.DamageMultiplier or functionArgs.FallbackWeaponDamageMultiplier) * functionArgs.DamageMultiplier,
+		DataProperties =
+		{
+			StartFx = dataProperties.StartFx,
+			ImpactVelocity = triggerArgs.ImpactVelocity or functionArgs.ImpactVelocity,
+			StartDelay = 0
+		},
+		ProjectileCap = 2,
+	}
+
+	local function PrintTable(table)
+		for key, value in pairs(table) do
+			if type(value) == "table" then
+				value = "table"
+			elseif type(value) == "boolean" then 
+				value = value and "True" or "False"
 			end
+			modutil.mod.Print(key..":"..value)
 		end
-		return
 	end
+
+	PrintTable(triggerArgs)
+
+	local count = 1
+	for i=1, count do
+		CreateProjectileFromUnit(omegaPoseidonProjectile)
+		local doubleChance = GetTotalHeroTraitValue("DoubleOlympianProjectileChance") * GetTotalHeroTraitValue( "LuckMultiplier", { IsMultiplier = true })
+		if RandomChance(doubleChance) then
+			wait( GetTotalHeroTraitValue("DoubleOlympianProjectileInterval" ))
+			CreateProjectileFromUnit(omegaPoseidonProjectile)
+		end
+	end
+	
 end)
 
 -- AresWrath custom function
