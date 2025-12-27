@@ -79,7 +79,7 @@ gods.CreateCustomRarity({
 			backingPath = true,
 		},
 		CustomRarityColor = Color.BoonPatchHeroic,
-		framePath = "GUI\\Screens\\BoonIconFrames\\heroic",
+		framePath = "GUI\\Screens\\BoonIconFrames\\unity",
 		backingPath = "GUI\\Screens\\BoonSelect\\BoonSlot_Unity",
 	},
 })
@@ -269,7 +269,7 @@ gods.CreateBoon({
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
-	displayName = "Wrath of Poseidon",
+	displayName = "Torrential Bomb",
 	description = "Your splash effects fire your waves from {$TraitData.OmegaPoseidonProjectileBoon.Name} with more {$Keywords.BaseDamage} at no extra cost.",
 	StatLines = { "BonusOceanSwellStatDisplay1" },
 	customStatLine = {
@@ -320,7 +320,7 @@ gods.CreateBoon({
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
-	displayName = "Wrath of Ares",
+	displayName = "Ferocious Ichor",
 	description = "Gain a chance to deal {$TraitData.AresStatusDoubleDamageBoon.DamagePercent:F} damage based on your current amount of {!Icons.BloodDropWithCountIcon}.",
 	StatLines = { "PlasmaDoubleDamageStatDisplay1" },
 	TrayStatLines = { "PlasmaDoubleDamageStatDisplay2" },
@@ -383,6 +383,7 @@ gods.CreateBoon({
 	isLegendary = false,
 	InheritFrom = {
 		wrathTrait,
+		"CostumeTrait",
 		"FireBoon",
 	},
 	addToExistingGod = true,
@@ -393,7 +394,7 @@ gods.CreateBoon({
 	description = "After you take damage while having {!Icons.ArmorTotal}, create a blast that deals {$TooltipData.ExtractData.Damage} damage in an area.",
 	StatLines = { "BlastRevengeStatDisplay1" },
 	customStatLine = {
-		Id = "BlastRevengeStatDisplay1",
+		ID = "BlastRevengeStatDisplay1",
 		displayName = "{!Icons.Bullet}{#PropertyFormat}Armor Gained Now:",
 		description = "{#UpgradeFormat}+{$TooltipData.ExtractData.TooltipAmount}",
 	},
@@ -471,11 +472,11 @@ gods.CreateBoon({
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
-	displayName = "Wrath of Zeus",
+	displayName = "Spurned Patriarch",
 	description = "Activating {$Keywords.Echo} on foes strikes them with {#BoldFormatGraft}{$TooltipData.ExtractData.BoltsNumber} {#Prev}lightning bolts, each dealing {#BoldFormatGraft}{$TooltipData.ExtractData.WrathBoltDamage} {#Prev}damage.",
 	StatLines = { "BlitzVengeanceStatDisplay1" },
 	customStatLine = {
-		Id = "BlitzVengeanceStatDisplay1",
+		ID = "BlitzVengeanceStatDisplay1",
 		displayName = "{!Icons.Bullet}{#PropertyFormat}Double Strike Chance:",
 		description = "{#UpgradeFormat}{$TooltipData.StatDisplay1}",
 	},
@@ -651,7 +652,7 @@ gods.CreateBoon({
 	description = "Your {$Keywords.HeartBurstPlural} are stronger and fire your {$Keywords.CastEX} upon striking a foe.",
 	StatLines = { "BonusHeartthrobDamageStatDisplay1" },
 	customStatLine = {
-		Id = "BonusHeartthrobDamageStatDisplay1",
+		ID = "BonusHeartthrobDamageStatDisplay1",
 		displayName = "{!Icons.Bullet}{#PropertyFormat}Bonus Heartthrob Damage:",
 		description = "{#UpgradeFormat}{$TooltipData.StatDisplay1}",
 	},
