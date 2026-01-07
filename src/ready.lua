@@ -89,13 +89,14 @@ local wrathTrait = gods.GetInternalRarityName("Wrath")
 uid, internal, charactername ,legendary, rarity, slot, blockstacking,  statlines, extractval, elements, displayName
 extrafields, boonIconPath, requirements, flavourtext
 ]]
+
+-- This Hera boon will get cut eventually
 gods.CreateBoon({
 	pluginGUID = _PLUGIN.guid,
 	characterName = "Hera",
 	internalBoonName = "RandomCurseBoon",
 	isLegendary = false,
 	InheritFrom = {
-		wrathTrait,
 		"FireBoon",
 	},
 	addToExistingGod = true,
@@ -265,11 +266,11 @@ gods.CreateBoon({
 		wrathTrait,
 		"WaterBoon",
 	},
-	addToExistingGod = true,
+	addToExistingGod = { boonPosition = 10 },
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
-	displayName = "Torrential Bomb",
+	displayName = "Torrential Submersion",
 	description = "Your splash effects fire your waves from {$TraitData.OmegaPoseidonProjectileBoon.Name} with more {$Keywords.BaseDamage} at no extra cost.",
 	StatLines = { "BonusOceanSwellStatDisplay1" },
 	customStatLine = {
@@ -279,7 +280,7 @@ gods.CreateBoon({
 	},
 	requirements = {
 		OneFromEachSet = {
-			{ "PoseidonWeaponBoon", "PoseidonSpecialBoon", "FocusDamageShaveBoon" },
+			{ "PoseidonWeaponBoon", "PoseidonSpecialBoon", "PoseidonCastBoon" },
 			{ "OmegaPoseidonProjectileBoon" },
 			{ "PoseidonStatusBoon", "PoseidonExCastBoon", "EncounterStartOffenseBuffBoon" },
 		},
@@ -331,12 +332,12 @@ gods.CreateBoon({
 		wrathTrait,
 		"EarthBoon",
 	},
-	addToExistingGod = true,
+	addToExistingGod = { boonPosition = 10 },
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
 	displayName = "Ferocious Ichor",
-	description = "Gain a chance to deal {$TraitData.AresStatusDoubleDamageBoon.DamagePercent:F} damage based on your current amount of {!Icons.BloodDropWithCountIcon}.",
+	description = "Gain a chance to deal {$TraitData.AresStatusDoubleDamageBoon.DamagePercent:F} damage based on your current {!Icons.BloodDropWithCountIcon} count.",
 	StatLines = { "PlasmaDoubleDamageStatDisplay1" },
 	TrayStatLines = { "PlasmaDoubleDamageStatDisplay2" },
 	customStatLine = {
@@ -398,14 +399,14 @@ gods.CreateBoon({
 	isLegendary = false,
 	InheritFrom = {
 		wrathTrait,
-		"CostumeTrait",
+		"CostumeTrait", -- necessary for the boon's functionality
 		"FireBoon",
 	},
-	addToExistingGod = true,
+	addToExistingGod = { boonPosition = 10 },
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
-	displayName = "Explosive Plating",
+	displayName = "Eruptive Plating",
 	description = "After you take damage while having {!Icons.ArmorTotal}, create a blast that deals {$TooltipData.ExtractData.Damage} damage in an area.",
 	StatLines = { "BlastRevengeStatDisplay1" },
 	customStatLine = {
@@ -483,7 +484,7 @@ gods.CreateBoon({
 		wrathTrait,
 		"AirBoon",
 	},
-	addToExistingGod = true,
+	addToExistingGod = { boonPosition = 10 },
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
@@ -659,7 +660,7 @@ gods.CreateBoon({
 		wrathTrait,
 		"WaterBoon",
 	},
-	addToExistingGod = true,
+	addToExistingGod = { boonPosition = 10 },
 	reuseBaseIcons = true,
 	BlockStacking = true,
 
@@ -705,6 +706,82 @@ gods.CreateBoon({
 			},
 			SourceIsMultiplier = true,
 			ReportValues = { ReportedHeartthrobMultiplier = "HeartthrobBonusMultiplier" },
+		},
+	},
+})
+
+gods.CreateBoon({
+	pluginGUID = _PLUGIN.guid,
+	characterName = "Hestia",
+	internalBoonName = "HestiaWrathBoon",
+	isLegendary = false,
+	InheritFrom = {
+		wrathTrait,
+		"FireBoon",
+	},
+	addToExistingGod = { boonPosition = 10 },
+	reuseBaseIcons = true,
+	BlockStacking = true,
+
+	displayName = "Cindered Ritual",
+	description = "Foes combust when their inflicted {$Keywords.Burn} exceeds their current remaining {!Icons.EnemyHealth}.",
+	StatLines = { "CombustThresholdStatDisplay1" },
+	customStatLine = {
+		ID = "CombustThresholdStatDisplay1",
+		displayName = "{!Icons.Bullet}{#PropertyFormat}Min Health for Combustion:",
+		description = "{#UpgradeFormat}{$TooltipData.StatDisplay1}",
+	},
+	requirements = {
+		OneFromEachSet = {
+			{ "HestiaWeaponBoon", "HestiaSpecialBoon", "HestiaCastBoon" },
+			{ "OmegaZeroBurnBoon", "BurnArmorBoon" },
+			{ "BurnExplodeBoon", "AloneDamageBoon" },
+		},
+	},
+	flavourText = "Flames can be a source of warmth and comfort, provided one is careful not to draw too close.",
+	boonIconPath = "GUI\\Screens\\BoonIcons\\Hestia_39",
+
+	ExtractValues = {
+		{
+			Key = "ReportedThreshold",
+			ExtractAs = "CombustThreshold",
+			Format = "Percent",
+			HideSigns = true,
+		},
+		{
+			ExtractAs = "BurnRate",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectLuaData",
+			BaseName = "BurnEffect",
+			BaseProperty = "DamagePerSecond",
+			DecimalPlaces = 1,
+		},
+	},
+
+	ExtraFields = {
+		OnEnemyDamagedAction = {
+			FunctionName = "BurnInstaKill",
+			FunctionArgs = {
+				ExecuteImmunities = {
+					Prometheus = 
+					{
+						GameStateRequirement = 
+						{
+							{
+								Path = { "GameState", "ShrineUpgrades", "BossDifficultyShrineUpgrade" },
+								Comparison = ">=",
+								Value = 3,
+							},
+						}
+					}
+				},
+				CombustDeathThreshold = 0.3,
+				ReportValues = 
+				{ 
+					ReportedThreshold = "CombustDeathThreshold",
+				}
+			},
 		},
 	},
 })
@@ -772,7 +849,7 @@ function not_public.CheckRandomShareDamageCurse(victim, functionArgs, triggerArg
 	end
 end
 
--- -- PoseidonWrath custom function
+-- PoseidonWrath custom function
 modutil.mod.Path.Override("PoseidonWrath", function(unit, functionArgs, triggerArgs)
 	-- If Hero doesnt have Ocean Swell, dont crash, just dont do it
 	if not HeroHasTrait("OmegaPoseidonProjectileBoon") then
@@ -781,7 +858,7 @@ modutil.mod.Path.Override("PoseidonWrath", function(unit, functionArgs, triggerA
 
 	local traitData = GetHeroTrait("OmegaPoseidonProjectileBoon")
 
-	-- This does nothing currently, but we can for example extract if red color must be used if trigger objectile is Ares one 
+	-- This does nothing currently, but we can for example extract if red color must be used if trigger projectile is Ares one 
 	local dataProperties = GetProjectileProperty({ ProjectileId = triggerArgs.ProjectileId, Property = "DataProperties" })
 
 	local omegaPoseidonProjectile = 
@@ -893,7 +970,7 @@ modutil.mod.Path.Override("ZeusWrath", function(unit, args)
 		strikeCount = strikeCount + 1
 	end
 	if strikeCount > 1 then
-		thread( InCombatTextArgs, { TargetId = CurrentRun.Hero.ObjectId, Text = "ZeusWrath_CombatText", LuaKey = "TempTextData", ShadowScaleX = 1.1, LuaValue = { Amount = strikeCount, BoonName = gods.GetInternalBoonName("ZeusWrathBoon") }} )
+		thread( InCombatTextArgs, { TargetId = unit.ObjectId, Text = "ZeusWrath_CombatText", LuaKey = "TempTextData", ShadowScaleX = 1.1, LuaValue = { Amount = strikeCount, BoonName = gods.GetInternalBoonName("ZeusWrathBoon") }} )
 	end
 	CreateZeusBolt({
 		ProjectileName = args.ProjectileName, 
@@ -938,6 +1015,50 @@ modutil.mod.Path.Wrap("CreateProjectileFromUnit", function (baseFunc, args)
 		args.DamageMultiplier = args.DamageMultiplier * HeartthrobWrathMultiplier
 	end
 	return baseFunc(args)
+end)
+
+--HestiaWrath custom functions
+modutil.mod.Path.Override("BurnInstaKill", function( args, attacker, victim, triggerArgs )
+	--[[for k,v in pairs(victim.ActiveEffects["BurnEffect"]) do
+		print(k)
+	end]]--
+
+	-- Print to determine if there's any curse on the enemy at all
+	if not victim.ActiveEffectsAtDamageStart then
+		modutil.mod.Hades.PrintOverhead("No active effect")
+	else
+		modutil.mod.Hades.PrintOverhead("CURSED!")
+	end
+	
+
+	-- Currently does nothing, code copied from Demeter legendary, will modify later
+	if attacker == CurrentRun.Hero and HasEffectWithEffectGroup( victim, "Burn" )
+		and not victim.IsDead and not victim.CannotDieFromDamage and victim.Health / victim.MaxHealth <= args.CombustDeathThreshold
+		and ( victim.Phases == nil or victim.CurrentPhase == victim.Phases ) then
+
+		if args.ExecuteImmunities and args.ExecuteImmunities[victim.Name] and IsGameStateEligible( victim, args.ExecuteImmunities[victim.Name].GameStateRequirement ) then
+			if not victim.ResistChillKillPresentation then
+				victim.ResistChillKillPresentation = true
+				BossResistChillKillPresentation( victim )
+			end
+			return
+		end 
+		SessionMapState.FiredChillKill[victim.ObjectId] = true
+		PlaySound({ Name = "/SFX/Player Sounds/HestiaSwipeSFX", Id = victim.ObjectId })
+		CreateAnimation({ Name = "IcarusExplosion", DestinationId = victim.ObjectId })
+		
+		if victim.IsBoss then
+			BossChillKillPresentation( victim )
+		end
+		if victim.DeathAnimation ~= nil and not victim.ManualDeathAnimation then
+			SetAnimation({ Name = victim.DeathAnimation, DestinationId = victim.ObjectId })
+			-- @todo Notify on death animation finish
+		end
+		thread( Kill, victim, { ImpactAngle = 0, AttackerTable = CurrentRun.Hero, AttackerId = CurrentRun.Hero.ObjectId })
+		if victim.UseBossHealthBar then
+			CurrentRun.BossHealthBarRecord[victim.Name] = 0 -- Health bar won't get updated again normally
+		end
+	end
 end)
 
 --[[
