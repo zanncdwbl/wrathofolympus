@@ -51,8 +51,8 @@ gods.CreateCustomRarity({
 			backingPath = true,
 		},
 		CustomRarityColor = Color.AresVoice,
-		framePath = "GUI\\Screens\\BoonIconFrames\\unity",
-		backingPath = "GUI\\Screens\\BoonSelect\\BoonSlot_Unity",
+		framePath = "Wistiti-WrathOfOlympusBoonFrames\\wrath_1",
+		backingPath = "Wistiti-WrathOfOlympusBoonFrames\\BoonSlot_Wrath",
 	},
 })
 local wrathTrait = gods.GetInternalRarityName("Wrath")
