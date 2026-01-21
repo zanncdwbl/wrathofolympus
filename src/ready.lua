@@ -34,34 +34,6 @@ sjson.hook(HelpTextFile, function(data)
 	table.insert(data.Texts, mod.ZeusWrathBoon_CombatText)
 end)
 
---[[mod.FrostbiteBurst_Data = sjson.to_object({
-	Name = "FrostbiteProjectile",
-	InheritFrom = "1_BaseProjectile",
-	DetonateFx = "RadialNovaDemeter",
-	Type = "INSTANT",
-	Fuse = 0.1,
-	Range = 0,
-	Damage = 75,
-	DamageRadius = 220.0,
-	DamageRadiusScaleY = 0.6,
-	DamageRadiusScaleX = 1.1,
-	AutoAdjustForTarget = false,
-	UseVulnerability = false,
-	NumPenetrations = 999,
-	IgnoreDodge = true,
-	SpawnRadius = 0,
-	Speed = -100,
-	UseStartLocation = true,
-	DetonateLineOfSight = true,
-	CanHitWithoutDamage = true,
-	SilentImpactOnInvulnerable = true,
-}, Order)
-
-sjson.hook(PlayerProjectilesFile, function(data)
-	table.insert(data.Texts, mod.FrostbiteBurst_Data)
-end)]]
---
-
 gods.CreateCustomRarity({
 	Name = "Wrath",
 	BlockStacking = true,
@@ -78,7 +50,7 @@ gods.CreateCustomRarity({
 			framePath = true,
 			backingPath = true,
 		},
-		CustomRarityColor = Color.BoonPatchHeroic,
+		CustomRarityColor = Color.AresVoice,
 		framePath = "GUI\\Screens\\BoonIconFrames\\unity",
 		backingPath = "GUI\\Screens\\BoonSelect\\BoonSlot_Unity",
 	},
@@ -89,173 +61,6 @@ local wrathTrait = gods.GetInternalRarityName("Wrath")
 uid, internal, charactername ,legendary, rarity, slot, blockstacking,  statlines, extractval, elements, displayName
 extrafields, boonIconPath, requirements, flavourtext
 ]]
-
--- This Hera boon will get cut eventually
-gods.CreateBoon({
-	pluginGUID = _PLUGIN.guid,
-	characterName = "Hera",
-	internalBoonName = "RandomCurseBoon",
-	isLegendary = false,
-	InheritFrom = {
-		"FireBoon",
-	},
-	addToExistingGod = true,
-
-	displayName = "Family Discourse",
-	description = "Whenever you inflict {$Keywords.Link}, also randomly inflict {$Keywords.StatusPlural} from other Olympians.",
-	StatLines = { "BonusOlympianDamageStatDisplay1" },
-	customStatLine = {
-		ID = "BonusOlympianDamageStatDisplay1",
-		displayName = "{!Icons.Bullet}{#PropertyFormat}Bonus Random Curses:",
-		description = "{#UpgradeFormat}{$TooltipData.ExtractData.CurseCount}",
-	},
-	requirements = { OneOf = { "HeraWeaponBoon", "HeraSpecialBoon", "HeraCastBoon", "HeraSprintBoon" } },
-	boonIconPath = "GUI\\Screens\\BoonIcons\\Hera_33",
-	reuseBaseIcons = true,
-	BlockStacking = true,
-	RarityLevels = {
-		Common = 1.00,
-		Rare = 2,
-		Epic = 3,
-		Heroic = 4,
-	},
-
-	ExtractValues = {
-		{
-			Key = "ReportedCurseCount",
-			ExtractAs = "CurseCount",
-		},
-		-- Hitch highlight Duration and Share Damage
-		{
-			ExtractAs = "DamageShareDuration",
-			SkipAutoExtract = true,
-			External = true,
-			BaseType = "EffectData",
-			BaseName = "DamageShareEffect",
-			BaseProperty = "Duration",
-		},
-		{
-			ExtractAs = "DamageShareAmount",
-			SkipAutoExtract = true,
-			External = true,
-			BaseType = "EffectData",
-			BaseName = "DamageShareEffect",
-			BaseProperty = "Amount",
-			Format = "Percent",
-		},
-	},
-
-	ExtraFields = {
-		OnEffectApplyFunction = {
-			FunctionName = "rom.mods." .. _PLUGIN.guid .. ".not.CheckRandomShareDamageCurse",
-			FunctionArgs = {
-				CurseCount = { BaseValue = 1 },
-				Effects = {
-					AmplifyKnockbackEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "PoseidonFirstPickUp" },
-							},
-						},
-						CopyValuesFromTraits = {
-							Modifier = { "PoseidonStatusBoon" },
-						},
-					},
-					BlindEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "ApolloFirstPickUp" },
-							},
-						},
-					},
-					DamageEchoEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "ZeusFirstPickUp" },
-							},
-						},
-						ExtendDuration = "EchoDurationIncrease",
-						DefaultModifier = 1,
-						CopyValuesFromTraits = {
-							Modifier = { "ZeusWeaponBoon", "ZeusSpecialBoon" },
-						},
-					},
-
-					DelayedKnockbackEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "HephaestusFirstPickUp" },
-							},
-						},
-						CopyValuesFromTraits = {
-							TriggerDamage = { "MassiveKnockupBoon" },
-						},
-					},
-					ChillEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "DemeterFirstPickUp" },
-							},
-						},
-						CustomFunction = "ApplyRoot",
-					},
-
-					WeakEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "AphroditeFirstPickUp" },
-							},
-						},
-						CustomFunction = "ApplyAphroditeVulnerability",
-					},
-
-					BurnEffect = {
-						GameStateRequirements = {
-							{
-								PathTrue = { "GameState", "TextLinesRecord", "HestiaFirstPickUp" },
-							},
-						},
-						CustomFunction = "ApplyBurn",
-						DefaultNumStacks = 30,
-						CopyNumStacksFromTraits = { "HestiaWeaponBoon", "HestiaSpecialBoon" },
-					},
-
-					--[[AresStatus = 
-					{
-						GameStateRequirements =
-						{
-							{
-								Path = { "GameState", "TextLinesRecord", },
-								HasAny = { "AresFirstPickUp" },
-							},
-						},
-						AddOutgoingDamageModifiers =
-						{
-							ValidEffects = "DamageShareEffect",
-							MissingEffectDamage = EffectData.AresStatus.BonusBaseDamageOnInflict,
-							MissingEffectName = "AresStatus",
-							MissingDamagePresentation = 
-							{
-								TextStartColor = Color.AresDamageLight,
-								TextColor = Color.AresDamage,
-								FunctionName = "AresRendApplyPresentation",
-								SimSlowDistanceThreshold = 180,
-								HitSimSlowCooldown = 0.8,
-								HitSimSlowParameters =
-								{
-									{ ScreenPreWait = 0.02, Fraction = 0.13, LerpTime = 0 },
-									{ ScreenPreWait = 0.10, Fraction = 1.0, LerpTime = 0.05 },
-								},
-							},
-						},
-					},]]
-					--
-				},
-				ReportValues = { ReportedCurseCount = "CurseCount" },
-			},
-		},
-	},
-})
 
 gods.CreateBoon({
 	pluginGUID = _PLUGIN.guid,
@@ -565,92 +370,6 @@ gods.CreateBoon({
 	},
 })
 
---[[gods.CreateBoon({
-    pluginGUID = _PLUGIN.guid,
-    characterName = "Demeter",
-	internalBoonName = "DemeterWrathBoon",
-    isLegendary = false,
-	InheritFrom = 
-	{
-		wrathTrait,
-		"WaterBoon",
-	},
-    addToExistingGod = true,
-	reuseBaseIcons = true,
-    BlockStacking = true,
-
-    displayName = "Wrath of Demeter",
-    description = "After the {$Keywords.Root} duration on your foes expires, they suffer from Frostbite.",
-	StatLines = { "FrostbiteBurstStatDisplay1" },
-    customStatLine = {
-        Id = "FrostbiteBurstStatDisplay1",
-        displayName = "{!Icons.Bullet}{#PropertyFormat}Frostbite Damage:",
-        description = "{#UpgradeFormat}{$TooltipData.StatDisplay1} {#Prev}{#ItalicFormat}(per 1 Sec.)",
-    },
-	requirements =
-	{
-		OneFromEachSet =
-		{
-			{ "DemeterWeaponBoon", "DemeterSpecialBoon", "DemeterCastBoon" },
-			{ "DemeterSprintBoon", "CastNovaBoon" },
-			{ "SlowExAttackBoon", "CastAttachBoon", "RootDurationBoon" },
-		},
-	},
-    flavourText = "Life is resilient, and can take root even in cold, harsh environments... but only to a point.",
-    boonIconPath = "GUI\\Screens\\BoonIcons\\Demeter_32",
-    
-	ExtractValues =
-	{
-		{
-			Key = "ReportedFrostbiteMutiplier",
-			ExtractAs = "Damage",
-			Format = "MultiplyByBase",
-			BaseType = "Projectile",
-			BaseName = "FrostbiteProjectile",
-			BaseProperty = "Damage",
-		},
-		{
-			ExtractAs = "ChillDuration",
-			SkipAutoExtract = true,
-			External = true,
-			BaseType = "EffectData",
-			BaseName = "ChillEffect",
-			BaseProperty = "Duration",
-		},
-		{
-			ExtractAs = "ChillActiveDuration",
-			SkipAutoExtract = true,
-			External = true,
-			BaseType = "EffectData",
-			BaseName = "ChillEffect",
-			BaseProperty = "ActiveDuration",
-		},
-	},
-
-	ExtraFields = 
-	{
-		Frame = "Unity",
-		OnEnemyDamagedAction =
-		{
-			Name = "FrostbiteDamage",
-			Args =
-			{
-				ProjectileName = "FrostbiteEffect",
-				FreezeTimeScale = 1,
-				FrostbiteMultiplier =
-				{
-					BaseValue = 1,
-				},
-			},
-			ReportedValues =
-			{
-				ReportedFrostbiteMultiplier = "FrostbiteMultipier",
-			},
-		},
-    },
-})]]
---
-
 gods.CreateBoon({
 	pluginGUID = _PLUGIN.guid,
 	characterName = "Aphrodite",
@@ -728,7 +447,7 @@ gods.CreateBoon({
 	StatLines = { "CombustThresholdStatDisplay1" },
 	customStatLine = {
 		ID = "CombustThresholdStatDisplay1",
-		displayName = "{!Icons.Bullet}{#PropertyFormat}Min Health for Combustion:",
+		displayName = "{!Icons.Bullet}{#PropertyFormat}Health Threshold for Combustion:",
 		description = "{#UpgradeFormat}{$TooltipData.StatDisplay1}",
 	},
 	requirements = {
@@ -760,14 +479,12 @@ gods.CreateBoon({
 	},
 
 	ExtraFields = {
-		OnEnemyDamagedAction = {
+		OnDamageEnemyFunction = {
 			FunctionName = "BurnInstaKill",
 			FunctionArgs = {
 				ExecuteImmunities = {
-					Prometheus = 
-					{
-						GameStateRequirement = 
-						{
+					Prometheus = {
+						GameStateRequirement = {
 							{
 								Path = { "GameState", "ShrineUpgrades", "BossDifficultyShrineUpgrade" },
 								Comparison = ">=",
@@ -776,7 +493,9 @@ gods.CreateBoon({
 						}
 					}
 				},
-				CombustDeathThreshold = 0.3,
+				CombustDeathThreshold = 0.4,
+				ProjectileName = "IcarusExplosion",
+				DamageMultiplier = 0,
 				ReportValues = 
 				{ 
 					ReportedThreshold = "CombustDeathThreshold",
@@ -786,68 +505,268 @@ gods.CreateBoon({
 	},
 })
 
+gods.CreateBoon({
+	pluginGUID = _PLUGIN.guid,
+	characterName = "Apollo",
+	internalBoonName = "ApolloWrathBoon",
+	isLegendary = false,
+	InheritFrom = {
+		wrathTrait,
+		"AirBoon",
+	},
+	addToExistingGod = { boonPosition = 10 },
+	reuseBaseIcons = true,
+	BlockStacking = true,
+
+	displayName = "Critical Fiasco",
+	description = "Whenever {$Keywords.Blind} causes a foe to miss, it takes {#BoldFormatGraft}{$TooltipData.ExtractData.MissDamage} {#Prev}damage and becomes {$Keywords.Mark}.",
+	StatLines = { "DazeCritStatDisplay1" },
+	customStatLine = {
+		ID = "DazeCritStatDisplay1",
+		displayName = "{!Icons.Bullet}{#PropertyFormat}Critical Chance vs. Daze:",
+		description = "{#UpgradeFormat}{$TooltipData.StatDisplay1}",
+	},
+	requirements = {
+		OneFromEachSet = {
+			{ "ApolloWeaponBoon", "ApolloSpecialBoon" },
+			{ "ApolloCastBoon", "ApolloSprintBoon" },
+			{ "BlindChanceBoon", "ApolloRetaliateBoon" },
+		},
+	},
+	flavourText = "We cannot all be the best at what we do, for the god of light has much of it covered.",
+	boonIconPath = "GUI\\Screens\\BoonIcons\\Apollo_36",
+
+	ExtractValues = {
+		{
+			Key = "DazeMissDamage",
+			ExtractAs = "MissDamage",
+			SkipAutoExtract = true,
+		},
+		{
+			ExtractAs = "BlindChance",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "BlindEffect",
+			BaseProperty = "MissChance",
+			Format = "Percent"
+		},
+		{
+			ExtractAs = "BlindDuration",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "BlindEffect",
+			BaseProperty = "Duration",
+		},
+		{
+			Key = "ReportedCritBonus",
+			ExtractAs = "CritBonus",
+			Format = "LuckModifiedPercent"
+		},
+		{
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "ArtemisBoonHuntersMark",
+			BaseProperty = "Duration",
+			ExtractAs = "TooltipMarkDuration",
+			SkipAutoExtract = true,
+		},
+		{
+			External = true,
+			BaseType = "EffectLuaData",
+			BaseName = "ArtemisBoonHuntersMark",
+			BaseProperty = "CritVulnerability",
+			ExtractAs = "CritRate",
+			Format = "Percent",
+			SkipAutoExtract = true,
+		}
+	},
+
+	ExtraFields = {
+		DazeMissDamage = 100, -- used for description only
+		OnDodgeFunction = 
+		{
+			FunctionName = "ApolloWrath",
+			RunOnce = true,
+			FunctionArgs =
+			{
+				ProjectileName = "ApolloRetaliateStrike",
+				EffectName = "ArtemisBoonHuntersMark",
+				DamageMultiplier =
+				{
+					BaseValue = 2,
+					MinMultiplier = 0.1,
+					IdenticalMultiplier =
+					{
+						Value = -0.5,
+					},
+				},
+				ReportValues = { ReportedMissDamage = "DamageMultiplier" },
+			},
+		},
+		AddOutgoingCritModifiers =
+		{
+			Chance = { BaseValue = 0.1 },
+			ValidActiveEffects = { "BlindEffect" },
+			ReportValues = { ReportedCritBonus = "Chance"},
+		},
+	},
+})
+
+gods.CreateBoon({
+	pluginGUID = _PLUGIN.guid,
+	characterName = "Hera",
+	internalBoonName = "HeraWrathBoon",
+	isLegendary = false,
+	InheritFrom = {
+		wrathTrait,
+		"AetherBoon",
+	},
+	addToExistingGod = { boonPosition = 10 },
+	reuseBaseIcons = true,
+	BlockStacking = true,
+
+	displayName = "Perfidious Matrimony",
+	description = "Your {$Keywords.CastSet} summon a sturdy {$Keywords.Link}-afflicted critter in the binding circle.",
+	StatLines = { "HitchPunchingBagStatDisplay1" },
+	customStatLine = {
+		ID = "HitchPunchingBagStatDisplay1",
+		displayName = "{!Icons.Bullet}{#PropertyFormat}Hitch Damage from Critter:",
+		description = "{#UpgradeFormat}{$TooltipData.StatDisplay1}",
+	},
+	requirements = {
+		OneFromEachSet = {
+			{ "SuperSacrificeBoonZeus" },
+			{ "HeraWeaponBoon", "HeraSpecialBoon", "HeraCastBoon", "HeraSprintBoon" },
+		},
+	},
+	flavourText = "The more disparate personalities a family contains, the stronger it can be; thus says the Queen.",
+	boonIconPath = "GUI\\Screens\\BoonIcons\\Hera_37",
+
+	ExtractValues = {
+		{
+			Key = "ReportedHitchBonus",
+			ExtractAs = "TooltipData",
+			Format = "PercentDelta",
+		},
+		{
+			ExtractAs = "DamageShareDuration",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "DamageShareEffect",
+			BaseProperty = "Duration",
+		},
+		{
+			ExtractAs = "DamageShareAmount",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "DamageShareEffect",
+			BaseProperty = "Amount",
+			Format = "Percent",
+		},
+	},
+
+	ExtraFields = {
+		OnWeaponFiredFunctions =
+		{
+			ValidWeapons =  WeaponSets.HeroNonPhysicalWeapons,
+			FunctionName = "HeraMoutonSpawn",
+			FunctionArgs =
+			{
+				SpawnedEnemy = "Sheep",
+				EffectName = "DamageShareEffect",
+				MaxHealthMultiplier = 2,
+				StartDelay = 0.2,
+				HitchShareAmountBonus = 2.0, --used for description only
+				ReportValues = { ReportedHitchBonus = "HitchShareAmountBonus" },
+			},
+		},
+	},
+})
+
+gods.CreateBoon({
+    pluginGUID = _PLUGIN.guid,
+    characterName = "Demeter",
+	internalBoonName = "DemeterWrathBoon",
+    isLegendary = false,
+	InheritFrom = {
+		wrathTrait,
+		"WaterBoon",
+	},
+    addToExistingGod = { boonPosition = 10 },
+	reuseBaseIcons = true,
+    BlockStacking = true,
+
+    displayName = "Wrath of Demeter",
+    description = "After the {$Keywords.Root} duration on your foes expires, they suffer from Frostbite.",
+	StatLines = { "FrostbiteBurstStatDisplay1" },
+    customStatLine = {
+        Id = "FrostbiteBurstStatDisplay1",
+        displayName = "{!Icons.Bullet}{#PropertyFormat}Frostbite Damage:",
+        description = "{#UpgradeFormat}{$TooltipData.StatDisplay1} {#Prev}{#ItalicFormat}(per 1 Sec.)",
+    },
+	requirements =
+	{
+		OneFromEachSet =
+		{
+			{ "DemeterWeaponBoon", "DemeterSpecialBoon", "DemeterCastBoon" },
+			{ "DemeterSprintBoon", "CastNovaBoon" },
+			{ "SlowExAttackBoon", "CastAttachBoon" },
+		},
+	},
+    flavourText = "Life is resilient, and can take root even in cold, harsh environments... but only to a point.",
+    boonIconPath = "GUI\\Screens\\BoonIcons\\Demeter_32",
+    
+	ExtractValues =
+	{
+		{
+			Key = "ReportedFrostbiteMultiplier",
+			ExtractAs = "Damage",
+			Format = "MultiplyByBase",
+			BaseType = "Projectile",
+			BaseName = "FrostbiteProjectile",
+			BaseProperty = "Damage",
+		},
+		{
+			ExtractAs = "ChillDuration",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "ChillEffect",
+			BaseProperty = "Duration",
+		},
+		{
+			ExtractAs = "ChillActiveDuration",
+			SkipAutoExtract = true,
+			External = true,
+			BaseType = "EffectData",
+			BaseName = "ChillEffect",
+			BaseProperty = "ActiveDuration",
+		},
+	},
+
+	ExtraFields = 
+	{
+		OnEnemyDamagedAction =
+		{
+			FunctionName = "FrostbiteDamage",
+			FunctionArgs =
+			{
+				EffectName = "ChillEffect",
+				FrostbiteMultiplier = 75,
+			},
+			ReportedValues =
+			{
+				ReportedFrostbiteMultiplier = "FrostbiteMultipier",
+			},
+		},
+    },
+})
+
 -- Function Library --
-
--- FamilyDiscourse custom function
-function not_public.CheckRandomShareDamageCurse(victim, functionArgs, triggerArgs)
-	if triggerArgs.EffectName == "DamageShareEffect" and not triggerArgs.Reapplied and victim.ActivationFinished then
-		local eligibleEffects = { }
-		for name, data in pairs( functionArgs.Effects ) do
-			if not data.GameStateRequirements or IsGameStateEligible( data, data.GameStateRequirements ) then
-				table.insert( eligibleEffects, name )
-			end
-		end
-		local CurseCount = functionArgs.CurseCount or 1
-		for i=1, CurseCount do 
-			local effectName = RemoveRandomValue( eligibleEffects )
-			if not effectName then
-				return
-			end
-			local applicationData = functionArgs.Effects[effectName]
-			if applicationData.CustomFunction then
-				local stacks = applicationData.DefaultNumStacks
-				if applicationData.CopyNumStacksFromTraits then
-					for _, traitName in pairs(applicationData.CopyNumStacksFromTraits ) do
-							if HeroHasTrait( traitName ) then
-								local traitData = GetHeroTrait( traitName )
-								if traitData.OnEnemyDamagedAction and traitData.OnEnemyDamagedAction.Args then
-									local args = traitData.OnEnemyDamagedAction.Args
-									if args.NumStacks and stacks < args.NumStacks then
-										stacks = args.NumStacks
-									end
-								end
-							end
-					end
-				end
-
-				CallFunctionName( applicationData.CustomFunction, victim, {EffectName = effectName, NumStacks = stacks } )
-			else
-				local dataProperties = EffectData[effectName].EffectData or EffectData[effectName].DataProperties
-				if applicationData.ExtendDuration then
-					dataProperties.Duration = dataProperties.Duration + GetTotalHeroTraitValue(applicationData.ExtendDuration)
-				end
-				if applicationData.DefaultModifier then
-					dataProperties.Modifier = applicationData.DefaultModifier
-				end
-				if applicationData.CopyValuesFromTraits then
-					for property, traitNames in pairs(applicationData.CopyValuesFromTraits ) do
-						for _, traitName in pairs( traitNames ) do
-							if HeroHasTrait( traitName ) then
-								local traitData = GetHeroTrait( traitName )
-								if traitData and traitData.OnEnemyDamagedAction and traitData.OnEnemyDamagedAction.Args then
-									if not dataProperties[property] or ( dataProperties[property] and traitData.OnEnemyDamagedAction.Args[property] > dataProperties[property] ) then
-										dataProperties[ property ] = traitData.OnEnemyDamagedAction.Args[property]
-									end
-								end
-							end
-						end
-					end
-				end
-				ApplyEffect( { DestinationId = victim.ObjectId, Id = CurrentRun.Hero.ObjectId, EffectName = effectName, DataProperties = dataProperties })
-			end
-		end
-	end
-end
 
 -- PoseidonWrath custom function
 modutil.mod.Path.Override("PoseidonWrath", function(unit, functionArgs, triggerArgs)
@@ -1023,37 +942,23 @@ modutil.mod.Path.Override("BurnInstaKill", function( args, attacker, victim, tri
 		print(k)
 	end]]--
 
-	-- Print to determine if there's any curse on the enemy at all
-	if not victim.ActiveEffectsAtDamageStart then
-		modutil.mod.Hades.PrintOverhead("No active effect")
-	else
-		modutil.mod.Hades.PrintOverhead("CURSED!")
-	end
-	
-
-	-- Currently does nothing, code copied from Demeter legendary, will modify later
 	if attacker == CurrentRun.Hero and HasEffectWithEffectGroup( victim, "Burn" )
-		and not victim.IsDead and not victim.CannotDieFromDamage and victim.Health / victim.MaxHealth <= args.CombustDeathThreshold
+		and not victim.IsDead
+		and not victim.CannotDieFromDamage
+		and victim.Health / victim.MaxHealth <= args.CombustDeathThreshold
+		and (victim.Health - victim.ActiveEffects["BurnEffect"] <= 0)
 		and ( victim.Phases == nil or victim.CurrentPhase == victim.Phases ) then
 
 		if args.ExecuteImmunities and args.ExecuteImmunities[victim.Name] and IsGameStateEligible( victim, args.ExecuteImmunities[victim.Name].GameStateRequirement ) then
 			if not victim.ResistChillKillPresentation then
 				victim.ResistChillKillPresentation = true
-				BossResistChillKillPresentation( victim )
 			end
 			return
 		end 
-		SessionMapState.FiredChillKill[victim.ObjectId] = true
-		PlaySound({ Name = "/SFX/Player Sounds/HestiaSwipeSFX", Id = victim.ObjectId })
-		CreateAnimation({ Name = "IcarusExplosion", DestinationId = victim.ObjectId })
-		
-		if victim.IsBoss then
-			BossChillKillPresentation( victim )
-		end
-		if victim.DeathAnimation ~= nil and not victim.ManualDeathAnimation then
-			SetAnimation({ Name = victim.DeathAnimation, DestinationId = victim.ObjectId })
-			-- @todo Notify on death animation finish
-		end
+
+		-- Projectile is created but deals no damage, only for visuals
+		CreateProjectileFromUnit({ Name = args.ProjectileName, Id = CurrentRun.Hero.ObjectId, DestinationId = victim.ObjectId, DamageMultiplier = args.DamageMultiplier, FireFromTarget = true})
+
 		thread( Kill, victim, { ImpactAngle = 0, AttackerTable = CurrentRun.Hero, AttackerId = CurrentRun.Hero.ObjectId })
 		if victim.UseBossHealthBar then
 			CurrentRun.BossHealthBarRecord[victim.Name] = 0 -- Health bar won't get updated again normally
@@ -1061,89 +966,174 @@ modutil.mod.Path.Override("BurnInstaKill", function( args, attacker, victim, tri
 	end
 end)
 
---[[
-	AirBoon = 
-	{
-		Elements = { "Air" },
-		DebugOnly = true,
-	},
-	FireBoon = 
-	{
-		Elements = {"Fire"},
-		DebugOnly = true,
-	},
-	EarthBoon = 
-	{
-		Elements = {"Earth"},
-		DebugOnly = true,
-	},
-	WaterBoon = 
-	{
-		Elements = {"Water"},
-		DebugOnly = true,
-	},
-	AetherBoon = 
-	{
-		Elements = {"Aether"},
-		DebugOnly = true,
-	},
-    	SynergyTrait =
-	{
-		InheritFrom = { "AetherBoon", },
-		GameStateRequirements =
-		{
-			{
-				Path = { "CurrentRun", "CurrentRoom", "ChosenRewardType", },
-				IsNone = { "Devotion", },
-			},
-		},
-		IsDuoBoon = true,
-		Frame = "Duo",
-		BlockStacking = true,
-		DebugOnly = true,
-		RarityLevels =
-		{
-			Duo =
-			{
-				MinMultiplier = 1,
-				MaxMultiplier = 1,
-			},
-		},
-	},
+modutil.mod.Path.Override("ApplyBurn", function (victim, functionArgs, triggerArgs)
+	functionArgs = ShallowCopyTable(functionArgs) or { EffectName = "BurnEffect", NumStacks = 1 }
+	local effectName = functionArgs.EffectName 
+	
+	if victim and victim.BlockEffectWhileRootActive == effectName then
+		return
+	end
 
-	LegacyTrait = 
-	{
-		IsLegacyTrait = true,
-		DebugOnly = true,
-	},
+	if victim and victim.EffectBlocks and Contains(victim.EffectBlocks, effectName) then
+		return
+	end
 
-	UnityTrait = 
-	{
-		IsElementalTrait = true,
-		BlockStacking = true,
-		BlockInRunRarify = true,
-		BlockMenuRarify = true,
-		ExcludeFromRarityCount = true,
-		CustomRarityName = "Boon_Infusion",
-		CustomRarityColor = Color.BoonPatchElemental,
-		InfoBackingAnimation = "BoonSlotUnity",
-		UpgradeChoiceBackingAnimation = "BoonSlotUnity",
-		Frame = "Unity",
-		DebugOnly = true,
-		RarityLevels =
-		{
-			Common =
-			{
-				Multiplier = 1,
-			},
-			Rare =
-			{
-				Multiplier = 1,
-			},
-			Epic =
-			{
-				Multiplier = 1,
-			},
-		}
-	},
-]]
+	if not EffectData[effectName] then
+		return
+	end
+	local dataProperties = MergeAllTables({
+		EffectData[effectName].EffectData, 
+		functionArgs.EffectArgs
+	})
+	if HeroHasTrait("BurnStackBoon") then
+		for _, data in pairs( GetHeroTraitValues("EffectModifier")) do
+			if EffectData[effectName].DisplaySuffix == data.ValidActiveEffectGenus then
+				if data.IntervalMultiplier then
+					dataProperties.Cooldown = dataProperties.Cooldown * data.IntervalMultiplier
+				end
+				if data.DurationIncrease then
+					dataProperties.Duration = dataProperties.Duration + data.DurationIncrease
+				end
+			end
+		end
+	end
+	if not SessionMapState.FirstBurnRecord[ victim.ObjectId ] then
+		functionArgs.NumStacks = functionArgs.NumStacks + GetTotalHeroTraitValue("BonusFirstTimeBurn")
+		SessionMapState.FirstBurnRecord[ victim.ObjectId ] = true
+	end
+	local maxStacks = EffectData[effectName].MaxStacks
+	if HeroHasTrait(gods.GetInternalBoonName("HestiaWrathBoon")) then
+		maxStacks = EffectData[effectName].MaxStacks * 10
+	end
+	if not victim.ActiveEffects[effectName] or victim.ActiveEffects[effectName] < maxStacks then
+		IncrementTableValue( victim.ActiveEffects, effectName, functionArgs.NumStacks )
+		if victim.ActiveEffects[effectName] > maxStacks then
+			victim.ActiveEffects[effectName] = maxStacks
+		end
+	end
+	ApplyEffect( { DestinationId = victim.ObjectId, Id = CurrentRun.Hero.ObjectId, EffectName = effectName, NumStacks = functionArgs.NumStacks, DataProperties = dataProperties } )
+end)
+
+--ApolloWrath custom functions
+modutil.mod.Path.Override("ApolloWrath", function(unit, traitArgs)
+	if unit.ActiveEffects then
+		if unit.ActiveEffects["BlindEffect"] then
+			CreateProjectileFromUnit({ Name = traitArgs.ProjectileName, Id = CurrentRun.Hero.ObjectId, DestinationId = unit.ObjectId, DamageMultiplier = traitArgs.DamageMultiplier})
+			ApplyEffect( { DestinationId = unit.ObjectId, Id = CurrentRun.Hero.ObjectId, EffectName = traitArgs.EffectName, DataProperties = EffectData[traitArgs.EffectName].EffectData })
+		end
+	end
+end)
+
+--HeraWrath custom functions
+modutil.mod.Path.Override("HeraMoutonSpawn", function(weaponData, traitArgs, triggerArgs)
+	ShawnSummon(traitArgs.SpawnedEnemy, traitArgs, triggerArgs)
+end)
+
+modutil.mod.Path.Override("ShawnSummon", function(enemyName, traitArgs, triggerArgs)
+	local args = traitArgs or {}
+	local weaponDataMultipliers = 
+	{ 
+		MaxHealthMultiplier = args.MaxHealthMultiplier or 1, 
+	}
+	local enemyData = EnemyData[enemyName]
+	local newEnemy = DeepCopyTable( enemyData )
+	if enemyData.AlliedScaleMultiplier then
+		weaponDataMultipliers.ScaleMultiplier = enemyData.AlliedScaleMultiplier
+	end
+	newEnemy.Name = "Shawn"
+	newEnemy.SheepHitVelocity = 400
+	newEnemy.HideHealthBar = false
+	newEnemy.BlocksLootInteraction = false
+	newEnemy.IgnoreCastSlow = false
+	newEnemy.RequiredKill = false
+	newEnemy.MaxHealth = newEnemy.MaxHealth * weaponDataMultipliers.MaxHealthMultiplier
+	newEnemy.HealthBarOffsetY = (newEnemy.HealthBarOffsetY or -155 )
+	
+	newEnemy.DefaultAIData.ExitMapAfterDuration = 6
+
+	newEnemy.DamageType = "Enemy"
+	newEnemy.TriggersOnDamageEffects = true
+	newEnemy.CanBeFrozen = true
+
+	newEnemy.BlocksLootInteraction = false
+
+	newEnemy.SkipModifiers = false
+	newEnemy.SkipDamageText = false
+	newEnemy.SkipDamagePresentation = false
+	newEnemy.IgnoreAutoLock = false
+
+	ProcessDataInheritance(newEnemy, EnemyData)
+	
+	local SpawnPoint = SpawnObstacle({ Name = "InvisibleTarget", DestinationId = CurrentRun.Hero.ObjectId, OffsetX = 0, OffsetY = 0, ForceToValidLocation = true})
+
+	if SessionMapState.CurrentShawn then
+		Kill(ActiveEnemies[SessionMapState.CurrentShawn], { Silent = true })
+	end
+
+	newEnemy.ObjectId = SpawnUnit({
+		Name = enemyData.Name,
+		Group = "Standing",
+		DestinationId = SpawnPoint, OffsetX = 0, OffsetY = 0 })
+	SessionMapState.CurrentShawn = newEnemy.ObjectId
+	
+	thread( CreateAlliedEnemyPresentation, newEnemy )
+	thread( SetupUnit, newEnemy, CurrentRun, { SkipPresentation = true } )
+	SetThingProperty({ Property = "ElapsedTimeMultiplier", Value = GetGameplayElapsedTimeMultiplier(), ValueChangeType = "Absolute", DataValue = false, DestinationId = newEnemy.ObjectId })
+	
+	if not newEnemy or newEnemy.SkipModifiers or not GetThingDataValue({ Id = newEnemy.ObjectId, Property = "StopsProjectiles" }) or IsInvulnerable({ Id = newEnemy.ObjectId }) or IsUntargetable({ Id = newEnemy.ObjectId }) then
+		return
+	end
+
+	SetThingProperty({ Property = "ElapsedTimeMultiplier", Value = newEnemy.SpeedMultiplier, ValueChangeType = "Multiply", DataValue = false, DestinationId = newEnemy.ObjectId })
+
+	SetScale({ Id = newEnemy.ObjectId, Fraction = 1, Duration = 0 })
+	newEnemy.SummonHealthBarEffect = true
+	ApplyDamageShare( newEnemy, args, triggerArgs )
+	return newEnemy
+end)
+
+modutil.mod.Path.Wrap("ApplyDamageShare", function( baseFunc, victim, functionArgs, triggerArgs )
+	if HeroHasTrait(gods.GetInternalBoonName("HeraWrathBoon")) then
+		if functionArgs.EffectArgs == nil then
+			functionArgs.EffectArgs = { Amount = 0.3 }
+		end
+		if victim.Name == "Shawn" then
+			functionArgs.EffectArgs.Amount = 1.0 --needs to be modified with tooltip data
+		end
+	end
+	baseFunc( victim, functionArgs, triggerArgs )
+end)
+
+--DemeterWrath custom functions
+modutil.mod.Path.Wrap("ApplyRoot", function( baseFunc, victim, functionArgs, triggerArgs )
+	baseFunc(victim, functionArgs, triggerArgs)
+	if victim.ActiveEffects then
+		if victim.ActiveEffects["ChillEffect"] and victim.RootActive then
+			thread( FrosbiteDamage, enemy, functionArgs, triggerArgs)
+		end
+	end
+end)
+
+modutil.mod.Path.Override("FrosbiteDamage", function (victim, functionArgs, triggerArgs)
+	local victim = triggerArgs.Victim
+	local dataProperties = MergeAllTables({
+		EffectData["ChillEffect"].EffectData, 
+		functionArgs.EffectArgs
+	})
+	if victim and not victim.IsDead then
+		local freezeDuration = dataProperties.Duration - (dataProperties.ExpiringTimeThreshold - GetTotalHeroTraitValue("RootDurationExtension"))
+		wait(freezeDuration)
+		damageAmount = freezeDuration * 75
+		modutil.mod.Hades.PrintOverhead("FrosbiteDamage "..(damageAmount))
+		CreateProjectileFromUnit({ 
+				Name = "RubbleFallOlympus", 
+				DestinationId = victim.ObjectId, 
+				Id = CurrentRun.Hero.ObjectId, 
+				DamageMultiplier = damageAmount / 200, --dividing by 4 again because of placeholder projectile
+				FireFromTarget = true,
+				ProjectileCap = 1, 
+				OffsetY = -329,
+			})
+		CreateAnimation({ Name = "OlympusIcicleFalling", DestinationId = victim.ObjectId })
+	end
+end)
